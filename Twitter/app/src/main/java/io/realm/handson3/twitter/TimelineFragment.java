@@ -21,6 +21,12 @@ import io.realm.handson3.twitter.entity.Tweet;
 
 public class TimelineFragment extends ListFragment {
 
+    static class ViewHolder {
+        ImageView image;
+        TextView screenName;
+        TextView text;
+    }
+
     private Realm realm;
 
     @Override
@@ -52,17 +58,26 @@ public class TimelineFragment extends ListFragment {
             public View getView(int position, View convertView, ViewGroup parent) {
                 final Tweet tweet = getItem(position);
 
+                ViewHolder holder;
                 if (convertView == null) {
                     convertView = inflater.inflate(R.layout.listitem_tweet, parent, false);
+
+                    // ViewHolder Pattern
+                    holder = new ViewHolder();
+                    holder.image = (ImageView) convertView.findViewById(R.id.image);
+                    holder.screenName = (TextView) convertView.findViewById(R.id.screen_name);
+                    holder.text = (TextView) convertView.findViewById(R.id.text);
+                    convertView.setTag(holder);
+                } else {
+                    holder = (ViewHolder) convertView.getTag();
                 }
 
-                // TODO 余裕があればViewHolderパターンを適用してください
-                ((TextView) convertView.findViewById(R.id.screen_name)).setText(tweet.getScreenName());
-                ((TextView) convertView.findViewById(R.id.text)).setText(tweet.getText());
+                holder.screenName.setText(tweet.getScreenName());
+                holder.text.setText(tweet.getText());
 
                 Picasso.with(context)
                         .load(tweet.getIconUrl())
-                        .into((ImageView) convertView.findViewById(R.id.image));
+                        .into(holder.image);
 
                 listView.setItemChecked(position, tweet.isFavorited());
                 return convertView;
