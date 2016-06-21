@@ -1,5 +1,6 @@
 package io.realm.handson3.twitter;
 
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ListFragment;
@@ -17,6 +18,7 @@ import io.realm.Realm;
 import io.realm.RealmBaseAdapter;
 import io.realm.RealmResults;
 import io.realm.Sort;
+import io.realm.handson3.twitter.databinding.ListitemTweetBinding;
 import io.realm.handson3.twitter.entity.Tweet;
 
 public class TimelineFragment extends ListFragment {
@@ -58,26 +60,21 @@ public class TimelineFragment extends ListFragment {
             public View getView(int position, View convertView, ViewGroup parent) {
                 final Tweet tweet = getItem(position);
 
-                ViewHolder holder;
+                ListitemTweetBinding binding;
                 if (convertView == null) {
-                    convertView = inflater.inflate(R.layout.listitem_tweet, parent, false);
-
-                    // ViewHolder Pattern
-                    holder = new ViewHolder();
-                    holder.image = (ImageView) convertView.findViewById(R.id.image);
-                    holder.screenName = (TextView) convertView.findViewById(R.id.screen_name);
-                    holder.text = (TextView) convertView.findViewById(R.id.text);
-                    convertView.setTag(holder);
+                    binding = DataBindingUtil.inflate(inflater, R.layout.listitem_tweet, parent, false);
+                    convertView = binding.getRoot();
+                    convertView.setTag(binding);
                 } else {
-                    holder = (ViewHolder) convertView.getTag();
+                    binding = (ListitemTweetBinding) convertView.getTag();
                 }
 
-                holder.screenName.setText(tweet.getScreenName());
-                holder.text.setText(tweet.getText());
+                binding.screenName.setText(tweet.getScreenName());
+                binding.text.setText(tweet.getText());
 
                 Picasso.with(context)
                         .load(tweet.getIconUrl())
-                        .into(holder.image);
+                        .into(binding.image);
 
                 listView.setItemChecked(position, tweet.isFavorited());
                 return convertView;
