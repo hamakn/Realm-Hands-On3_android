@@ -21,6 +21,10 @@ import io.realm.handson3.twitter.entity.Tweet;
 
 public class TimelineFragment extends ListFragment {
 
+    private final int VIEW_TYPE_TWEET = 0;
+    private final int VIEW_TYPE_RETWEET = 1;
+    private final int VIEW_COUNT = 2;
+
     private Realm realm;
 
     @Override
@@ -53,7 +57,16 @@ public class TimelineFragment extends ListFragment {
                 final Tweet tweet = getItem(position);
 
                 if (convertView == null) {
-                    convertView = inflater.inflate(R.layout.listitem_tweet, parent, false);
+                    switch (getItemViewType(position)) {
+                        case VIEW_TYPE_TWEET:
+                            convertView = inflater.inflate(R.layout.listitem_tweet, parent, false);
+                            break;
+                        case VIEW_TYPE_RETWEET:
+                            convertView = inflater.inflate(R.layout.listitem_retweet, parent, false);
+                            break;
+                        default:
+                            break;
+                    }
                 }
 
                 // TODO 余裕があればViewHolderパターンを適用してください
@@ -66,6 +79,21 @@ public class TimelineFragment extends ListFragment {
 
                 listView.setItemChecked(position, tweet.isFavorited());
                 return convertView;
+            }
+
+            @Override
+            public int getViewTypeCount() {
+                return VIEW_COUNT;
+            }
+
+            @Override
+            public int getItemViewType(int position) {
+                Tweet tweet = getItem(position);
+                if (tweet.getText().startsWith("RT @")) {
+                    return VIEW_TYPE_RETWEET;
+                } else {
+                    return VIEW_TYPE_TWEET;
+                }
             }
         };
 
