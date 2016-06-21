@@ -8,9 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
@@ -18,17 +16,14 @@ import io.realm.Realm;
 import io.realm.RealmBaseAdapter;
 import io.realm.RealmResults;
 import io.realm.Sort;
+import io.realm.handson3.twitter.databinding.ListitemRetweetBinding;
 import io.realm.handson3.twitter.databinding.ListitemTweetBinding;
 import io.realm.handson3.twitter.entity.Tweet;
 
 public class TimelineFragment extends ListFragment {
-
-    static class ViewHolder {
-        ImageView image;
-        TextView screenName;
-        TextView text;
-    }
-
+    private final int VIEW_TYPE_TWEET = 0;
+    private final int VIEW_TYPE_RETWEET = 1;
+    private final int VIEW_COUNT = 2;
     private Realm realm;
 
     @Override
@@ -57,9 +52,42 @@ public class TimelineFragment extends ListFragment {
         final RealmResults<Tweet> tweets = buildTweetList(realm);
         final RealmBaseAdapter<Tweet> adapter = new RealmBaseAdapter<Tweet>(getContext(), tweets) {
             @Override
+            public int getViewTypeCount() {
+                return VIEW_COUNT;
+            }
+
+            @Override
+            public int getItemViewType(int position) {
+                Tweet tweet = getItem(position);
+                if (tweet.getText().startsWith("RT @")) {
+                    return VIEW_TYPE_RETWEET;
+                } else {
+                    return VIEW_TYPE_TWEET;
+                }
+            }
+
+            @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 final Tweet tweet = getItem(position);
 
+                switch (getItemViewType(position)) {
+                    case VIEW_TYPE_TWEET:
+                        convertView = getTweetView(tweet, position, convertView, parent);
+                        break;
+
+                    case VIEW_TYPE_RETWEET:
+                        convertView = getRetweetView(tweet, position, convertView, parent);
+                        break;
+
+                    default:
+                        break;
+                }
+
+                listView.setItemChecked(position, tweet.isFavorited());
+                return convertView;
+            }
+
+            private View getTweetView(Tweet tweet, int position, View convertView, ViewGroup parent) {
                 ListitemTweetBinding binding;
                 if (convertView == null) {
                     binding = DataBindingUtil.inflate(inflater, R.layout.listitem_tweet, parent, false);
@@ -76,7 +104,26 @@ public class TimelineFragment extends ListFragment {
                         .load(tweet.getIconUrl())
                         .into(binding.image);
 
-                listView.setItemChecked(position, tweet.isFavorited());
+                return convertView;
+            }
+
+            private View getRetweetView(Tweet tweet, int position, View convertView, ViewGroup parent) {
+                ListitemRetweetBinding binding;
+                if (convertView == null) {
+                    binding = DataBindingUtil.inflate(inflater, R.layout.listitem_retweet, parent, false);
+                    convertView = binding.getRoot();
+                    convertView.setTag(binding);
+                } else {
+                    binding = (ListitemRetweetBinding) convertView.getTag();
+                }
+
+                binding.rtScreenName.setText(tweet.getScreenName());
+                binding.rtText.setText(tweet.getText());
+
+                Picasso.with(context)
+                        .load(tweet.getIconUrl())
+                        .into(binding.rtImage);
+
                 return convertView;
             }
         };
