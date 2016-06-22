@@ -97,9 +97,7 @@ public class TimelineFragment extends ListFragment {
                     binding = (ListitemTweetBinding) convertView.getTag();
                 }
 
-                binding.screenName.setText(tweet.getScreenName());
-                binding.text.setText(tweet.getText());
-
+                binding.setTweet(tweet);
                 Picasso.with(context)
                         .load(tweet.getIconUrl())
                         .into(binding.image);
@@ -117,9 +115,7 @@ public class TimelineFragment extends ListFragment {
                     binding = (ListitemRetweetBinding) convertView.getTag();
                 }
 
-                binding.rtScreenName.setText(tweet.getScreenName());
-                binding.rtText.setText(tweet.getText());
-
+                binding.setTweet(tweet);
                 Picasso.with(context)
                         .load(tweet.getIconUrl())
                         .into(binding.rtImage);
