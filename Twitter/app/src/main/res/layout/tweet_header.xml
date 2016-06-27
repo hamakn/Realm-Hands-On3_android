@@ -6,10 +6,26 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!--
+            isEnabled を false にするとseparator(divisor)が消える
+            Android4以下は AdapterのisAllItemsEnableをtrueにすると解決するが
+            Android5は良い解決方法がわかっていないので、自分でseparator相当を追加
+        -->
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#e4e4e4" />
+
         <TextView
             android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Header" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#e4e4e4" />
     </LinearLayout>
 </layout>

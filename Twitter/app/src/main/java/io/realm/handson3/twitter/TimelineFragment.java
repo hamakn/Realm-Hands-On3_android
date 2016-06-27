@@ -65,6 +65,7 @@ public class TimelineFragment extends ListFragment {
         //noinspection ConstantConditions
         final ListView listView = getListView();
         listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+        //listView.setDivider(null);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -105,6 +106,16 @@ public class TimelineFragment extends ListFragment {
                     return VIEW_TYPE_RETWEET;
                 } else {
                     return VIEW_TYPE_TWEET;
+                }
+            }
+
+            @Override
+            public boolean isEnabled(int position) {
+                TimelineItem item = getItem(position);
+                if (item.getViewType() == ITEM_TYPE_TWEET) {
+                    return true;
+                } else {
+                    return false;
                 }
             }
 
@@ -183,8 +194,6 @@ public class TimelineFragment extends ListFragment {
                 Picasso.with(context)
                         .load(tweet.getIconUrl())
                         .into(binding.rtImage);
-
-                View header = View.inflate(getContext(), R.layout.tweet_header, null);
 
                 return convertView;
             }
