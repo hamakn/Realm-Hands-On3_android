@@ -33,13 +33,17 @@ public abstract class MultiRealmListAdapter<T> extends BaseAdapter {
             RealmChangeListener<BaseRealm> listener = new RealmChangeListener<BaseRealm>() {
                 @Override
                 public void onChange(BaseRealm results) {
-                    notifyDataSetChanged();
+                    onDataSetChanged();
                 }
             };
             this.realmLists.add((OrderedRealmCollection<RealmModel>) realms);
             this.listeners.add(listener);
             addListener(realms, listener);
         }
+    }
+
+    public void onDataSetChanged() {
+        notifyDataSetChanged();
     }
 
     private void addListener(OrderedRealmCollection<?> realms, RealmChangeListener<BaseRealm> listener) {

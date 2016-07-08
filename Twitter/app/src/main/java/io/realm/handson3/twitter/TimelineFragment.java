@@ -30,6 +30,7 @@ public class TimelineFragment extends ListFragment {
     private final int VIEW_TYPE_HEADER = 2;
     private final int VIEW_COUNT = 3;
     private Realm realm;
+    RealmResults<Tweet> mTweets;
 
     private final int ITEM_TYPE_TWEET = 0;
     private final int ITEM_TYPE_HEADER = 2;
@@ -86,11 +87,17 @@ public class TimelineFragment extends ListFragment {
         });
 
         realm = Realm.getDefaultInstance();
-        final RealmResults<Tweet> tweets = buildTweetList(realm);
+        mTweets = buildTweetList(realm);
 
-        final List<TimelineItem> timeline = buildTimeline(tweets);
+        final List<TimelineItem> timeline = buildTimeline(mTweets);
 
-        final MultiRealmListAdapter<TimelineItem> adapter = new MultiRealmListAdapter<TimelineItem>(getContext(), timeline, tweets) {
+        final MultiRealmListAdapter<TimelineItem> adapter = new MultiRealmListAdapter<TimelineItem>(getContext(), timeline, mTweets) {
+            @Override
+            public void onDataSetChanged() {
+                adapterData = buildTimeline(mTweets);
+                notifyDataSetChanged();
+            }
+
             @Override
             public int getViewTypeCount() {
                 return VIEW_COUNT;
