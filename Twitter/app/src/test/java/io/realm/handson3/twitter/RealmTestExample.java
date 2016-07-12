@@ -7,18 +7,30 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.realm.MockRealm;
+import io.realm.Realm;
+import io.realm.RealmResults;
 import io.realm.handson3.twitter.entity.Tweet;
 
 import static org.junit.Assert.assertEquals;
+import static org.powermock.api.mockito.PowerMockito.doReturn;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({Realm.class, RealmResults.class, TweetUtil.class})
 public class RealmTestExample {
     private List<Tweet> mTweets;
+    private Realm mTestRealm;
+    private RealmResults mRealmResults;
 
     private Tweet buildTweetFromJSON(JSONObject jsonObject) {
         Tweet tweet = new Tweet();
@@ -26,36 +38,49 @@ public class RealmTestExample {
             tweet.setId(jsonObject.getLong("id"));
             tweet.setText(jsonObject.getString("text"));
         } catch (JSONException e) {
+            e.printStackTrace();
         }
         return tweet;
     }
 
     @Before
     public void setUp() throws Exception, JSONException, ParseException {
-        // test環境でrealmを取得する方法がなさそう...
-        /*
-        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder(this).build();
-        Realm.setDefaultConfiguration(realmConfiguration);
-        Realm realm = Realm.getDefaultInstance();
-        */
-
+        // load json
         final InputStream is = RealmTestExample.class.getClassLoader().getResourceAsStream("tweets.json");
         final String jsonText = IOUtils.toString(is);
         final JSONArray jsonArray = new JSONArray(jsonText);
         mTweets = new ArrayList<>();
         for (int i = 0; i < jsonArray.length(); i++) {
             final JSONObject jsonObject = jsonArray.getJSONObject(i);
-            // realm instanceが作れないのでできない
-            //final Tweet tweet = realm.createObjectFromJson(Tweet.class, jsonObject);
             final Tweet tweet = buildTweetFromJSON(jsonObject);
             mTweets.add(tweet);
         }
+
+        // mock realm
+        mTestRealm = MockRealm.mockRealm();
+        mRealmResults = MockRealm.mockRealmResult(mTestRealm, mTweets);
     }
 
     @Test
     public void test() throws Exception {
         assertEquals(4, 2 + 2);
-        assertEquals(mTweets.get(0).getId(), 1);
+
+        assertEquals(mTweets.size(), 2);
         assertEquals(mTweets.get(0).getText(), "hoge");
+
+        mockStatic(TweetUtil.class);
+        doReturn(mRealmResults).when(TweetUtil.class, "buildTweetList", mTestRealm);
+
+        RealmResults<Tweet> tweets = TweetUtil.buildTweetList(mTestRealm);
+        assertEquals(tweets.size(), 2);
+        assertEquals(tweets.get(0).getText(), "hoge");
+        assertEquals(tweets.get(1).getText(), "fuga");
+
+        for (int i = 0; i < tweets.size(); i++) {
+            System.out.println("for OK");
+        }
+        for (Tweet tweet : tweets) {
+            System.out.println("for-each OK");
+        }
     }
 }
