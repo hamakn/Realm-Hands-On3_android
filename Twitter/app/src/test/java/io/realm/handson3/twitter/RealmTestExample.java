@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
 import java.text.ParseException;
@@ -32,18 +33,15 @@ public class RealmTestExample {
     private Realm mTestRealm;
     private RealmResults mRealmResults;
 
-    private Tweet buildTweetFromJSON(JSONObject jsonObject) {
+    private Tweet buildTweetFromJSON(JSONObject jsonObject) throws JSONException {
         Tweet tweet = new Tweet();
-        try {
-            tweet.setId(jsonObject.getLong("id"));
-            tweet.setText(jsonObject.getString("text"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        tweet.setId(jsonObject.getLong("id"));
+        tweet.setText(jsonObject.getString("text"));
         return tweet;
     }
 
     @Before
+    @SuppressWarnings("unchecked")
     public void setUp() throws Exception, JSONException, ParseException {
         // load json
         final InputStream is = RealmTestExample.class.getClassLoader().getResourceAsStream("tweets.json");
@@ -55,6 +53,10 @@ public class RealmTestExample {
             final Tweet tweet = buildTweetFromJSON(jsonObject);
             mTweets.add(tweet);
         }
+
+        // load yaml
+        Yaml yaml = new Yaml();
+        mTweets = yaml.loadAs(ClassLoader.getSystemResourceAsStream("tweets.yml"), List.class);
 
         // mock realm
         mTestRealm = MockRealm.mockRealm();
@@ -75,6 +77,7 @@ public class RealmTestExample {
         assertEquals(tweets.size(), 2);
         assertEquals(tweets.get(0).getText(), "hoge");
         assertEquals(tweets.get(1).getText(), "fuga");
+        assertEquals(tweets.get(0).getIconUrl(), "http://hoge.test/1.jpg");
 
         for (int i = 0; i < tweets.size(); i++) {
             System.out.println("for OK");
